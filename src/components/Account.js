@@ -1,27 +1,52 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import AccountContext from '../context'
+import Modal from './Modal'
+
+
 
 function Account() {
     const { accounts, setAccounts } = useContext(AccountContext)
+    const [showModal, setShowModal] = useState(false)
+    const [childAccount, setChildAccount] = useState([])
+
+
+    const onClickHandler = (index) => {
+        const __childAccount = accounts.filter((account) => {
+            return account.account_parent_code === accounts[index].account_id
+
+        })
+
+        setShowModal(true)
+        setChildAccount(__childAccount)
+
+
+
+    }
 
 
     const renderAccounts = accounts.map((account, i) => {
 
         const isAccountHasParent = account.account_parent_code ? true : false
 
-        const parentIndex = isAccountHasParent ? accounts.findIndex(object => {
-            return object.account_id === account.account_id;
-        }) : null
+     
+        let parentIndex = null
 
-        const accountName = isAccountHasParent ? accounts[parentIndex].account_name: account.account_name
+        if (isAccountHasParent) {
+
+            for (let j = 0; accounts.length > j; j++) {
+                if (account.account_parent_code === accounts[j].account_id) parentIndex = j
+        }
+        }
+
+        const accountName = isAccountHasParent ? `Parent - ${accounts[parentIndex].account_name}` : account.account_name
 
         return (
             <tr key={i} >
                 <td> {accountName} </td>
-                <td> <button onClick={()=>{ onClickHandler(account.account_id) }} > + Add  </button> </td>
+                <td> <button onClick={() => { onClickHandler(i) }} > + Add  </button> </td>
                 <td> {account.account_type} </td>
                 <td> {account.account_category} </td>
-                <td> {account.use_status  === true ? "YES" : "NO"} </td>
+                <td> {account.use_status === true ? "YES" : "NO"} </td>
                 <td> {account.note} </td>
 
 
@@ -32,7 +57,7 @@ function Account() {
     return (
         <>
             <h1> Accounts </h1>
-            <table class="table">
+            <table className="table">
                 <thead>
                     <tr>
                         <th scope="col">Account Name</th>
@@ -49,6 +74,7 @@ function Account() {
                     }
                 </tbody>
             </table>
+            {showModal ? <Modal childAccount={childAccount} modalHandler={setShowModal} /> : null}
         </>
     )
 }
